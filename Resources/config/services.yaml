@@ -1,0 +1,33 @@
+services:
+    himiklab_jqgrid.jqgrid:
+        class: 'himiklab\JqGridBundle\JqGrid'
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@himiklab_jqgrid.request_handler'
+            - '@himiklab_jqgrid.entity_finder'
+            - '@himiklab_jqgrid.entity_handler'
+        public: true
+
+    himiklab_jqgrid.entity_finder:
+        class: 'himiklab\JqGridBundle\Util\EntityFinder'
+        arguments:
+            - '@doctrine.orm.entity_manager'
+
+    himiklab_jqgrid.entity_handler:
+        class: 'himiklab\JqGridBundle\Util\EntityHandler'
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@validator'
+
+    himiklab_jqgrid.request_handler:
+        class: 'himiklab\JqGridBundle\Util\RequestHandler'
+        arguments:
+            - '@request_stack'
+
+    himiklab_jqgrid.twig_extension:
+        class: 'himiklab\JqGridBundle\Twig\HimiklabJqGridExtension'
+        arguments: ['%himiklab_jqgrid_date_format%']
+        tags: ['twig.extension']
+
+parameters:
+    himiklab_jqgrid_date_format: 'd.m.Y'

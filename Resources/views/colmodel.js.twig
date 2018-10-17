@@ -1,0 +1,89 @@
+{% set lastKey = columns|keys|last|trans %}
+{% for columnKey, columnValue in columns %}
+    {% if columnValue is iterable %}
+        {% if columnValue.type == 'date' %}
+            {
+                "name": "{{ columnKey }}",
+                "index": "{{ columnKey }}",
+                "formatter": "date",
+                "formatoptions": {"srcformat": "Y-m-d", "newformat": "{{ himiklab_jqgrid_date_format }}"},
+                "searchoptions": {
+                    "searchhidden": true,
+                    "dataInit": {% include '@HimiklabJqGrid/colmodel_date.js.twig' %},
+                    "sopt": ["eq", "ne", "lt", "le", "gt", "ge", "nu", "nn"]
+                },
+                "hidden": {% if columnKey in columnsIsVisible %}{{ 'false' }}{% else %}{{ 'true' }}{% endif %},
+                "editable": {% if columnKey in columnsIsEditable %}{{ 'true' }}{% else %}{{ 'false' }}{% endif %}
+            }
+        {% elseif (columnValue.type == 'bool' or columnValue.type == 'boolean') %}
+            {
+                "name": "{{ columnKey }}",
+                "formatter": "select",
+                "stype": "select",
+                "edittype": "select",
+                "searchoptions": {
+                    "value": ":;1:" + jQuery.jgrid.locales[jQuery.jgrid.defaults.locale].edit.bYes + ";0:" +
+                        jQuery.jgrid.locales[jQuery.jgrid.defaults.locale].edit.bNo,
+                    "clearSearch": false,
+                    "searchhidden": true,
+                    "sopt": ["eq", "ne", "nu", "nn"]
+                },
+                "editoptions": {
+                    "value": {1: jQuery.jgrid.locales[jQuery.jgrid.defaults.locale].edit.bYes,
+                        2: jQuery.jgrid.locales[jQuery.jgrid.defaults.locale].edit.bNo}
+                },
+                "hidden": {% if columnKey in columnsIsVisible %}{{ 'false' }}{% else %}{{ 'true' }}{% endif %},
+                "editable": {% if columnKey in columnsIsEditable %}{{ 'true' }}{% else %}{{ 'false' }}{% endif %}
+            }
+        {% elseif (columnValue.type == 'int' or columnValue.type == 'integer') %}
+            {
+                "name": "{{ columnKey }}",
+                "index": "{{ columnKey }}",
+                "formatter": "integer",
+                "searchoptions": {
+                    "searchhidden": true,
+                    "sopt": ["eq", "ne", "lt", "le", "gt", "ge", "nu", "nn"]
+                },
+                "hidden": {% if columnKey in columnsIsVisible %}{{ 'false' }}{% else %}{{ 'true' }}{% endif %},
+                "editable": {% if columnKey in columnsIsEditable %}{{ 'true' }}{% else %}{{ 'false' }}{% endif %}
+            }
+        {% elseif (columnValue.type == 'list') %}
+            {% set lastListKey = columnValue.data|keys|last|trans %}
+            {
+                "name": "{{ columnKey }}",
+                "formatter": "select",
+                "stype": "select",
+                "edittype": "select",
+                "searchoptions": {
+                    "value": ":;{% for listKey, listItem in columnValue.data %}{{ listKey }}:{{ listItem }}{% if listKey|trans != lastListKey %};{% endif %}{% endfor %}",
+                    "clearSearch": false,
+                    "searchhidden": true,
+                    "sopt": ["eq", "ne", "nu", "nn"]
+                },
+                "editoptions": {
+                    "value": {
+                        {% for listKey, listItem in columnValue.data %}
+                            "{{ listKey }}": "{{ listItem }}"{% if listKey|trans != lastListKey %},{% endif %}
+                        {% endfor %}
+                    }
+                },
+                "hidden": {% if columnKey in columnsIsVisible %}{{ 'false' }}{% else %}{{ 'true' }}{% endif %},
+                "editable": {% if columnKey in columnsIsEditable %}{{ 'true' }}{% else %}{{ 'false' }}{% endif %}
+            }
+        {% elseif (columnValue.type == 'unique') %}
+            {{ columnValue.data|raw }}
+        {% endif %}
+    {% else %}
+        {
+            "name": "{{ columnValue }}",
+            "index": "{{ columnValue }}",
+            "searchoptions": {
+            "searchhidden": true,
+                "sopt": ["cn", "nc", "bw", "bn", "eq", "ne", "ew", "en", "nu", "nn"]
+            },
+            "hidden": {% if columnValue in columnsIsVisible %}{{ 'false' }}{% else %}{{ 'true' }}{% endif %},
+            "editable": {% if columnValue in columnsIsEditable %}{{ 'true' }}{% else %}{{ 'false' }}{% endif %}
+        }
+    {% endif %}
+{% if columnKey|trans != lastKey %},{% endif %}
+{% endfor %}

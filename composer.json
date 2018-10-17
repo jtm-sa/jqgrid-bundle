@@ -1,0 +1,36 @@
+{
+    "name": "himiklab/jqgrid-bundle",
+    "description": "Symfony bundle for a powerful ajax-enabled grid - jqGrid or free jqGrid.",
+    "keywords": ["symfony", "jqgrid", "grid", "ajax", "bundle"],
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "support": {
+        "source": "https://github.com/himiklab/jqgrid-bundle",
+        "issues": "https://github.com/himiklab/jqgrid-bundle"
+    },
+    "authors": [
+        {
+            "name": "HimikLab",
+            "homepage": "https://github.com/himiklab"
+        }
+    ],
+  "require": {
+    "php": ">=5.5",
+    "symfony/framework-bundle": "*",
+    "symfony/dependency-injection": "*",
+    "symfony/config": "*",
+    "symfony/http-kernel": "*",
+    "symfony/http-foundation": "*",
+    "symfony/serializer": "*",
+    "symfony/validator": "*",
+    "doctrine/orm": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "himiklab\\JqGridBundle\\": ""
+    }
+  }
+}
