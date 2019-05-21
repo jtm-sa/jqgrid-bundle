@@ -8,6 +8,8 @@ services:
             - '@himiklab_jqgrid.entity_handler'
         public: true
 
+    himiklab\JqGridBundle\JqGrid: '@himiklab_jqgrid.jqgrid'
+
     himiklab_jqgrid.entity_finder:
         class: 'himiklab\JqGridBundle\Util\EntityFinder'
         arguments:
