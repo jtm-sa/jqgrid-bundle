@@ -1,18 +1,18 @@
 <?php
 /**
  * @link https://github.com/himiklab/jqgrid-bundle
- * @copyright Copyright (c) 2018 HimikLab
+ * @copyright Copyright (c) 2018-2019 HimikLab
  * @license http://opensource.org/licenses/MIT MIT
  */
 
 namespace himiklab\JqGridBundle\Twig;
 
-use Twig_Environment;
-use Twig_Extension;
-use Twig_Extension_GlobalsInterface;
-use Twig_Function;
+use Twig\Environment;
+use Twig\Extension\AbstractExtension;
+use Twig\Extension\GlobalsInterface;
+use Twig\TwigFunction;
 
-class HimiklabJqGridExtension extends Twig_Extension implements Twig_Extension_GlobalsInterface
+class HimiklabJqGridExtension extends AbstractExtension implements GlobalsInterface
 {
     private $himiklabJqgridDateFormat;
 
@@ -24,7 +24,7 @@ class HimiklabJqGridExtension extends Twig_Extension implements Twig_Extension_G
     public function getFunctions(): array
     {
         return [
-            new Twig_Function(
+            new TwigFunction(
                 'jqgrid_colmodel',
                 [$this, 'prepareColmodel'],
                 ['needs_environment' => true]
@@ -32,8 +32,8 @@ class HimiklabJqGridExtension extends Twig_Extension implements Twig_Extension_G
         ];
     }
 
-    public function prepareColmodel(Twig_Environment $environment, array $columns, $columnsIsVisible = [],
-                                    $columnsIsEditable = []): string
+    public function prepareColmodel(Environment $environment, array $columns, array $columnsIsVisible = [],
+                                    array $columnsIsEditable = []): string
     {
         return $environment->render('@HimiklabJqGrid/colmodel.js.twig', [
             'columns' => $columns,
@@ -42,7 +42,7 @@ class HimiklabJqGridExtension extends Twig_Extension implements Twig_Extension_G
         ]);
     }
 
-    public function getGlobals()
+    public function getGlobals(): array
     {
         return ['himiklab_jqgrid_date_format' => $this->himiklabJqgridDateFormat];
     }

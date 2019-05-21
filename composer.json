@@ -15,7 +15,7 @@
         }
     ],
   "require": {
-    "php": ">=5.5",
+    "php": "^7.2",
     "symfony/framework-bundle": "*",
     "symfony/dependency-injection": "*",
     "symfony/config": "*",
@@ -23,7 +23,8 @@
     "symfony/http-foundation": "*",
     "symfony/serializer": "*",
     "symfony/validator": "*",
-    "doctrine/orm": "*"
+    "doctrine/orm": "*",
+    "twig/twig": "^2.7"
   },
   "require-dev": {
     "phpunit/phpunit": "*"
