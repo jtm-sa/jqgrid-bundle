@@ -20,29 +20,29 @@ or add
 "himiklab/jqgrid-bundle" : "*"
 ```
 
-to the require section of your application's `composer.json` file.
+to the require section of your application's `composer.json` file. And registered `HimiklabJqGridBundle` in you application config.
 
 * Assets
 
 reqired: `jqgrid` or `free-jqgrid` with `jquery` of course
-optional: `@fortawesome/fontawesome-free` and `bootstrap`
+optional: `@fortawesome/fontawesome-free` or `jquery-ui`, `bootstrap`
 
 * Template
 
 ```twig
 {% block stylesheets %}
-    <link rel="stylesheet" href="{{ asset('build/jqgrid.css') }}">
+    {{ encore_entry_link_tags('jqgrid') }}
 {% endblock %}
 {% block body %}
     <table id="jqGrid-grid"></table>
     <div id="jqGrid-pager"></div>
 {% endblock %}
 {% block javascripts %}
-    <script src="{{ asset('build/jqgrid.js') }}"></script>
+    {{ encore_entry_script_tags('jqgrid') }}
     <script>
         $(document).ready(function () {
             $("#jqGrid-grid").jqGrid({
-                "guiStyle": "bootstrap4",
+                //"guiStyle": "bootstrap4",
                 "url": "{{ path('customer_jqgrid_read') }}",
                 "datatype": "json",
                 "mtype": "post",
@@ -55,8 +55,8 @@ optional: `@fortawesome/fontawesome-free` and `bootstrap`
                 "rowList": [30, 60],
                 "multiselect": true,
                 "multiSort": true,
-                "viewrecords": true,
-                "iconSet": "fontAwesomeSolid"
+                "viewrecords": true
+                //"iconSet": "fontAwesomeSolid"
             })
                 .navGrid('#jqGrid-pager', {
                         "edit": true,
