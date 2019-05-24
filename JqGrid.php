@@ -1,7 +1,7 @@
 <?php
 /**
  * @link https://github.com/himiklab/jqgrid-bundle
- * @copyright Copyright (c) 2018 HimikLab
+ * @copyright Copyright (c) 2018-2019 HimikLab
  * @license http://opensource.org/licenses/MIT MIT
  */
 
@@ -12,11 +12,10 @@ use himiklab\JqGridBundle\Exception\EntityNotFoundException;
 use himiklab\JqGridBundle\Util\EntityFinder;
 use himiklab\JqGridBundle\Util\EntityHandler;
 use himiklab\JqGridBundle\Util\RequestHandler;
+use himiklab\JqGridBundle\Util\SearchFiltersDecoder;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Serializer\Encoder\JsonDecode;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 class JqGrid
 {
@@ -32,6 +31,9 @@ class JqGrid
     /** @var EntityHandler */
     private $entityHandler;
 
+    /** @var SearchFiltersDecoder */
+    private $searchFiltersDecoder;
+
     /** @var string */
     private $entityName;
 
@@ -42,12 +44,14 @@ class JqGrid
     private $scope;
 
     public function __construct(EntityManagerInterface $entityManager, RequestHandler $requestHandler,
-                                EntityFinder $entityFinder, EntityHandler $entityHandler)
+                                EntityFinder $entityFinder, EntityHandler $entityHandler,
+                                SearchFiltersDecoder $searchFiltersDecoder)
     {
         $this->entityManager = $entityManager;
         $this->requestHandler = $requestHandler;
         $this->entityFinder = $entityFinder;
         $this->entityHandler = $entityHandler;
+        $this->searchFiltersDecoder = $searchFiltersDecoder;
     }
 
     public function handleRead(Request $request): Response
@@ -59,7 +63,7 @@ class JqGrid
             $searchData = ['groupOp' => 'AND'];
             if ($requestData['filters'] !== '') {
                 // advanced searching
-                $searchData = $this->decodeSearchFilters($requestData['filters']);
+                $searchData = $this->searchFiltersDecoder->decode($requestData['filters']);
             } else {
                 // single searching
                 $searchData['rules'][] = [
@@ -195,10 +199,5 @@ class JqGrid
     {
         $this->scope = $scope;
         return $this;
-    }
-
-    protected function decodeSearchFilters(string $filtersData): array
-    {
-        return (new JsonDecode())->decode($filtersData, JsonEncoder::FORMAT, ['json_decode_associative' => true]);
     }
 }

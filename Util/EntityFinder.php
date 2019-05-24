@@ -1,7 +1,7 @@
 <?php
 /**
  * @link https://github.com/himiklab/jqgrid-bundle
- * @copyright Copyright (c) 2018 HimikLab
+ * @copyright Copyright (c) 2018-2019 HimikLab
  * @license http://opensource.org/licenses/MIT MIT
  */
 
@@ -20,7 +20,7 @@ class EntityFinder
     private $entityManager;
 
     /** @var QueryBuilder */
-    protected $builder;
+    private $builder;
 
     public function __construct(EntityManagerInterface $entityManager)
     {
@@ -84,10 +84,11 @@ class EntityFinder
             return $this;
         }
 
-        $baseCondition = 'andWhere';
         if ($filters['groupOp'] === 'OR') {
             $baseCondition = 'orWhere';
-        } elseif ($filters['groupOp'] !== 'AND') {
+        } elseif ($filters['groupOp'] === 'AND') {
+            $baseCondition = 'andWhere';
+        } else {
             throw new \LogicException('Unsupported value in `groupOp` param');
         }
 
@@ -110,8 +111,6 @@ class EntityFinder
 
     private function addSearchOptionsRecursively(array $filters, string $baseCondition, int &$paramNum): void
     {
-        $ruleArray = [];
-        $currentGroup = 'andX';
         if (isset($filters['groups'])) {
             foreach ($filters['groups'] as $group) {
                 $this->addSearchOptionsRecursively($group, $baseCondition, $paramNum);
@@ -120,10 +119,14 @@ class EntityFinder
 
         if ($filters['groupOp'] === 'OR') {
             $currentGroup = 'orX';
-        } elseif ($filters['groupOp'] !== 'AND') {
+        } elseif ($filters['groupOp'] === 'AND') {
+            $currentGroup = 'andX';
+        } else {
             throw new \LogicException('Unsupported value in `groupOp` param');
         }
 
+        $ruleArray = [];
+        $expr = $this->builder->expr();
         foreach ($filters['rules'] as $rule) {
             $rule['field'] = self::ENTITY_ALIAS . '.' . $rule['field'];
 
@@ -134,62 +137,62 @@ class EntityFinder
 
             switch ($rule['op']) {
                 case 'eq':
-                    $ruleArray[] = $this->builder->expr()->eq($rule['field'], "?{$paramNum}");
+                    $ruleArray[] = $expr->eq($rule['field'], "?{$paramNum}");
                     break;
                 case 'ne':
-                    $ruleArray[] = $this->builder->expr()->neq($rule['field'], "?{$paramNum}");
+                    $ruleArray[] = $expr->neq($rule['field'], "?{$paramNum}");
                     break;
                 case 'bw':
-                    $ruleArray[] = $this->builder->expr()->like($rule['field'], "?{$paramNum}");
-                    $rule['data'] = "{$rule['data']}%";
-                    break;
-                case 'bn':
-                    $ruleArray[] = $this->builder->expr()->notLike($rule['field'], "?{$paramNum}");
+                    $ruleArray[] = $expr->like($rule['field'], "?{$paramNum}");
                     $rule['data'] = "{$rule['data']}%";
                     break;
                 case 'ew':
-                    $ruleArray[] = $this->builder->expr()->like($rule['field'], "?{$paramNum}");
-                    $rule['data'] = "%{$rule['data']}";
-                    break;
-                case 'en':
-                    $ruleArray[] = $this->builder->expr()->notLike($rule['field'], "?{$paramNum}");
+                    $ruleArray[] = $expr->like($rule['field'], "?{$paramNum}");
                     $rule['data'] = "%{$rule['data']}";
                     break;
                 case 'cn':
-                    $ruleArray[] = $this->builder->expr()->like($rule['field'], "?{$paramNum}");
+                    $ruleArray[] = $expr->like($rule['field'], "?{$paramNum}");
                     $rule['data'] = "%{$rule['data']}%";
+                    break;
+                case 'bn':
+                    $ruleArray[] = $expr->notLike($rule['field'], "?{$paramNum}");
+                    $rule['data'] = "{$rule['data']}%";
+                    break;
+                case 'en':
+                    $ruleArray[] = $expr->notLike($rule['field'], "?{$paramNum}");
+                    $rule['data'] = "%{$rule['data']}";
                     break;
                 case 'nc':
-                    $ruleArray[] = $this->builder->expr()->notLike($rule['field'], "?{$paramNum}");
+                    $ruleArray[] = $expr->notLike($rule['field'], "?{$paramNum}");
                     $rule['data'] = "%{$rule['data']}%";
                     break;
-                case 'nu':
-                    $ruleArray[] = $this->builder->expr()->isNull($rule['field']);
+                case 'lt':
+                    $ruleArray[] = $expr->lt($rule['field'], "?{$paramNum}");
                     break;
-                case 'nn':
-                    $ruleArray[] = $this->builder->expr()->isNotNull($rule['field']);
+                case 'le':
+                    $ruleArray[] = $expr->lte($rule['field'], "?{$paramNum}");
+                    break;
+                case 'gt':
+                    $ruleArray[] = $expr->gt($rule['field'], "?{$paramNum}");
+                    break;
+                case 'ge':
+                    $ruleArray[] = $expr->gte($rule['field'], "?{$paramNum}");
                     break;
                 case 'in':
                     $rule['data'] = \explode(',', $rule['data']);
                     \array_walk($rule['data'], 'trim');
-                    $ruleArray[] = $this->builder->expr()->in($rule['field'], "?{$paramNum}");
+                    $ruleArray[] = $expr->in($rule['field'], "?{$paramNum}");
                     break;
                 case 'ni':
                     $rule['data'] = \explode(',', $rule['data']);
                     \array_walk($rule['data'], 'trim');
-                    $ruleArray[] = $this->builder->expr()->notIn($rule['field'], "?{$paramNum}");
+                    $ruleArray[] = $expr->notIn($rule['field'], "?{$paramNum}");
                     break;
-                case 'lt':
-                    $ruleArray[] = $this->builder->expr()->lt($rule['field'], "?{$paramNum}");
+                case 'nu':
+                    $ruleArray[] = $expr->isNull($rule['field']);
                     break;
-                case 'le':
-                    $ruleArray[] = $this->builder->expr()->lte($rule['field'], "?{$paramNum}");
-                    break;
-                case 'gt':
-                    $ruleArray[] = $this->builder->expr()->gt($rule['field'], "?{$paramNum}");
-                    break;
-                case 'ge':
-                    $ruleArray[] = $this->builder->expr()->gte($rule['field'], "?{$paramNum}");
+                case 'nn':
+                    $ruleArray[] = $expr->isNotNull($rule['field']);
                     break;
                 default:
                     throw new \LogicException('Unsupported value in `op` or `searchOper` param');
@@ -202,15 +205,15 @@ class EntityFinder
         }
         if (\count($ruleArray)) {
             $this->builder->$baseCondition(
-                \call_user_func_array([$this->builder->expr(), $currentGroup], $ruleArray)
+                \call_user_func_array([$expr, $currentGroup], $ruleArray)
             );
         }
     }
 
-    protected function preparedBuilderGuard(): void
+    private function preparedBuilderGuard(): void
     {
         if ($this->builder === null) {
-            throw new \LogicException('Call `preparedBuilder` method first. ');
+            throw new \LogicException('Call `preparedBuilder` method first.');
         }
     }
 }

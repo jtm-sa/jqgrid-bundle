@@ -1,7 +1,7 @@
 <?php
 /**
  * @link https://github.com/himiklab/jqgrid-bundle
- * @copyright Copyright (c) 2018 HimikLab
+ * @copyright Copyright (c) 2018-2019 HimikLab
  * @license http://opensource.org/licenses/MIT MIT
  */
 
@@ -11,6 +11,14 @@ use Symfony\Component\HttpFoundation\Request;
 
 class RequestHandler
 {
+    /** @var POSTDataFetcher */
+    private $postDataFetcher;
+
+    public function __construct(POSTDataFetcher $postDataFetcher)
+    {
+        $this->postDataFetcher = $postDataFetcher;
+    }
+
     public function getRequestData(Request $request): array
     {
         if ($request->isMethod('post')) {
@@ -25,7 +33,7 @@ class RequestHandler
 
     private function getRealPOSTData(): array
     {
-        $pairs = \explode('&', $this->getPOSTData());
+        $pairs = \explode('&', $this->postDataFetcher->getPOSTData());
         $vars = [];
         foreach ($pairs as $pair) {
             $pairParts = \explode('=', $pair);
@@ -40,10 +48,5 @@ class RequestHandler
         }
 
         return $vars;
-    }
-
-    protected function getPOSTData(): string
-    {
-        return \file_get_contents('php://input');
     }
 }

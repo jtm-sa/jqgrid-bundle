@@ -5,10 +5,12 @@
  * @license http://opensource.org/licenses/MIT MIT
  */
 
-namespace himiklab\JqGridBundle;
+namespace himiklab\JqGridBundle\Util;
 
-use Symfony\Component\HttpKernel\Bundle\Bundle;
-
-class HimiklabJqGridBundle extends Bundle
+class POSTDataFetcher
 {
+    public function getPOSTData(): string
+    {
+        return \file_get_contents('php://input');
+    }
 }

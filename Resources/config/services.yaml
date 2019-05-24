@@ -6,6 +6,7 @@ services:
             - '@himiklab_jqgrid.request_handler'
             - '@himiklab_jqgrid.entity_finder'
             - '@himiklab_jqgrid.entity_handler'
+            - '@himiklab_jqgrid.search_filters_decoder'
         public: true
 
     himiklab\JqGridBundle\JqGrid: '@himiklab_jqgrid.jqgrid'
@@ -24,12 +25,18 @@ services:
     himiklab_jqgrid.request_handler:
         class: 'himiklab\JqGridBundle\Util\RequestHandler'
         arguments:
-            - '@request_stack'
+            - '@himiklab_jqgrid.post_data_fecther'
 
     himiklab_jqgrid.twig_extension:
         class: 'himiklab\JqGridBundle\Twig\HimiklabJqGridExtension'
         arguments: ['%himiklab_jqgrid_date_format%']
         tags: ['twig.extension']
+
+    himiklab_jqgrid.post_data_fecther:
+        class: 'himiklab\JqGridBundle\Util\POSTDataFetcher'
+
+    himiklab_jqgrid.search_filters_decoder:
+        class: 'himiklab\JqGridBundle\Util\SearchFiltersDecoder'
 
 parameters:
     himiklab_jqgrid_date_format: 'd.m.Y'
