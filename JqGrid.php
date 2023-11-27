@@ -97,7 +97,7 @@ class JqGrid
             ++$i;
         }
 
-        return JsonResponse::create($responseData);
+        return new JsonResponse($responseData);
     }
 
     public function handleCreate(Request $request): ?Response
