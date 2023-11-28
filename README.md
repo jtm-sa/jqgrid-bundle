@@ -2,7 +2,7 @@ jqGrid Bundle for Symfony
 ========================
 Symfony bundle for a powerful ajax-enabled grid - [jqGrid](https://github.com/tonytomov/jqGrid) or [free jqGrid](https://github.com/free-jqgrid/jqGrid).
 
-[![Packagist](https://img.shields.io/packagist/dt/himiklab/jqgrid-bundle.svg)]() [![Packagist](https://img.shields.io/packagist/v/himiklab/jqgrid-bundle.svg)]()  [![license](https://img.shields.io/badge/License-MIT-yellow.svg)]()
+[![Packagist](https://img.shields.io/packagist/dt/jtmsa/jqgrid-bundle.svg)]() [![Packagist](https://img.shields.io/packagist/v/jtmsa/jqgrid-bundle.svg)]()  [![license](https://img.shields.io/badge/License-MIT-yellow.svg)]()
 
 Installation
 ------------
@@ -159,3 +159,7 @@ class CustomerController extends AbstractController
     }
 }
 ```
+Advices
+------------
+Non Camel Case is not supported
+
