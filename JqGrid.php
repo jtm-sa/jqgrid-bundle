@@ -73,6 +73,7 @@ class JqGrid
                 ];
             }
         }
+        //var_dump($searchData);
 
         $paginator = $this->entityFinder
             ->prepareBuilder($this->entityFields, $this->entityName, $this->scope)
@@ -88,15 +89,21 @@ class JqGrid
 
         $i = 0;
         foreach ($paginator as $entity) {
+
             $responseData['rows'][$i]['id'] = $this->entityHandler->convertEntityIdToGrid($entity);
             foreach ($this->entityFields as $modelAttribute) {
-                $responseData['rows'][$i]['cell'][$modelAttribute] =
-                    $this->entityHandler->getValue($entity, $modelAttribute);
+               // var_dump($modelAttribute);
+                if(strpos($modelAttribute,'id.')){
+                $responseData['rows'][$i]['cell'][$modelAttribute] = $this->entityHandler->convertEntityIdToGrid($entity);
+                }else{
+                    $responseData['rows'][$i]['cell'][$modelAttribute] = $this->entityHandler->getValue($entity, $modelAttribute);
+                }
+
+                
             }
 
             ++$i;
         }
-
         return new JsonResponse($responseData);
     }
 
@@ -108,17 +115,20 @@ class JqGrid
         }
 
         $entity = new $this->entityName;
+
         foreach ($this->entityFields as $column) {
             if ($column === 'id' || !isset($requestData[$column])) {
                 continue;
             }
-
+            
             $this->entityHandler->setValue($entity, $column, $requestData[$column]);
         }
 
         if (($errors = $this->entityHandler->validate($entity)) !== null) {
+
             return new Response($errors);
         }
+
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 

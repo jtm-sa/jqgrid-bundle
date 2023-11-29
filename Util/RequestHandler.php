@@ -46,7 +46,7 @@ class RequestHandler
                 $vars[$name] = $value;
             }
         }
-
+        
         return $vars;
     }
 }

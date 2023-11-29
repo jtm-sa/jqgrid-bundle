@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use ReflectionMethod;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use function Webmozart\Assert\Tests\StaticAnalysis\float;
 
 class EntityHandler
 {
@@ -34,6 +35,7 @@ class EntityHandler
 
     public function getValue(Object $entity, string $field)
     {
+
         $result = $entity;
         foreach (\explode('.', $field) as $fieldPart) {
             $getterName = 'get' . \ucfirst($fieldPart);
@@ -42,13 +44,15 @@ class EntityHandler
                 $result = $result->$getterName();
             } else {
                 $result = $result->{$fieldPart};
+
             }
 
             if (\is_object($result) && $result instanceof \DateTimeInterface) {
                 $result = $result->format(self::DATE_TIME_FORMAT);
+            }elseif (\is_object($result)){
+                $result=$result->getId();
             }
         }
-
         return $result;
     }
 
@@ -72,12 +76,48 @@ class EntityHandler
         if ($this->isFieldDateTime(\get_class($entity), $field)) {
             $value = new \DateTime($value);
         }
+        if($this->isFieldInt(\get_class($entity), $field)){
+            $value = intval($value);
+        }
+        if($this->isFieldDecimal(\get_class($entity), $field)){
+            $value = floatval($value);
+        }
+
+
+        if(empty($this->isFieldAssociation(\get_class($entity), $field))){
+            //THIS NULL MEANS THAT THIS IS AN OBJECT IN THEORY SO $value needs to be of type object
+
+            try{
+                $object=$this->entityManager->getRepository($field)->findBy(['id'=>(int)$value]);
+                $value=$object[0]->getId();
+
+            } catch (\Exception $e) {
+                $value=$value;
+
+            }
+
+            if(!is_int($value)){
+                $object=$this->entityManager->getRepository('AppBundle\Entity\\'.$field)->findBy(['id'=>(int)$value]);
+                $value=$object[0];
+
+            }
+
+        }
+
+
+
+
         $setterName = 'set' . \ucfirst(\end($fieldParts));
+
         if (\method_exists($currentEntity, $setterName)) {
             $currentEntity->$setterName($value);
+
         } else {
             $currentEntity->{\end($fieldParts)} = $value;
         }
+
+
+
     }
 
     public function validate(Object $entity): ?string
@@ -97,12 +137,15 @@ class EntityHandler
 
     public function convertEntityIdToGrid(Object $entity): string
     {
+
         $identifierFieldNames = $this->getClassMetadata(\get_class($entity))->getIdentifierFieldNames();
 
         $identifiers = [];
+
         foreach ($identifierFieldNames as $currentIdentifierFieldName) {
             $identifiers[] = $this->getValue($entity, $currentIdentifierFieldName);
         }
+
         return \implode(self::COMPOSITE_KEY_DELIMITER, $identifiers);
     }
 
@@ -120,16 +163,43 @@ class EntityHandler
 
     public function getFields(string $entityName): array
     {
-        return $this->entityManager->getClassMetadata($entityName)->getFieldNames();
+        //GETS ALL ENTITY FIELDS
+        $fieldNames=$this->entityManager->getClassMetadata($entityName)->getFieldNames();
+        //GETS ALL RELATED ENTITY FIELDS
+        $associatedNames=$this->entityManager->getClassMetadata($entityName)->getAssociationNames();
+
+        $fieldArray=array_merge($fieldNames,$associatedNames);
+
+        return $fieldArray;
     }
 
     private function isFieldDateTime(string $entityName, string $field): bool
     {
+
         $fieldType = $this->getClassMetadata($entityName)->getTypeOfField($field);
         return $fieldType === 'date' ||
             $fieldType === 'time' ||
             $fieldType === 'datetime' ||
             $fieldType === 'datetimetz';
+    }
+
+    private function isFieldAssociation(string $entityName, string $field)
+    {
+        $fieldType = $this->getClassMetadata($entityName)->getTypeOfField($field);
+        return $fieldType;
+    }
+
+    private function isFieldInt(string $entityName, string $field): bool
+    {
+        $fieldType = $this->getClassMetadata($entityName)->getTypeOfField($field);
+        return $fieldType === 'int' ||
+            $fieldType === 'integer';
+    }
+
+    private function isFieldDecimal(string $entityName, string $field): bool
+    {
+        $fieldType = $this->getClassMetadata($entityName)->getTypeOfField($field);
+        return $fieldType === 'decimal';
     }
 
     private function getEmbedded(string $field, string $entityName): Object
